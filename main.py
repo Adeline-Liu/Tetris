@@ -155,7 +155,7 @@ def create_grid(locked_pos = {}):
 
 # return a random shape in the shape list
 def get_shape():
-    return random.choice(shapes)
+    return Piece(5, 0, random.choice(shapes))
 
 def draw_grid(surface, grid):
     for i in range(len(grid)):
@@ -180,4 +180,32 @@ def draw_window(surface, grid):
 
     pygame.display.update()
 
+def main():
+    locked_positions = {}
+    grid = create_grid(locked_positions)
 
+    change_piece = False
+    run = True
+
+    current_piece = get_shape()
+    next_piece = get_shape()
+    clock = pygame.time.Clock()
+    fall_time = 0
+
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+                pygame.display.quit()
+                quit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    current_piece.x -= 1
+                if event.key == pygame.K_RIGHT:
+                    current_piece.x += 1
+                if event.key == pygame.K_DOWN:
+                    current_piece.y += 1
+                if event.key == pygame.K_UP:
+                    current_piece.rotation = current_piece.rotation + 1 % len(current_piece.shape)
