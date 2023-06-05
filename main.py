@@ -212,6 +212,7 @@ def draw_grid(surface, grid):
 
 
 def clear_row(grid, locked):
+    # number of rows cleared
     inc = 0
 
     for i in range(len(grid) - 1, -1, -1):
@@ -233,6 +234,16 @@ def clear_row(grid, locked):
                 newKey = (x, y + inc)
                 locked[newKey] = locked.pop(key)
 
+    return inc
+
+
+def draw_text_middle(surface, text, size, color):
+    font = pygame.font.SysFont('Arial', size, bold=True)
+    label = font.render(text, 1, color)
+
+    surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2),
+                         top_left_y + play_height / 2 - label.get_height() / 2))
+
 
 def draw_next_shape(shape, surface):
     font = pygame.font.SysFont('Arial', 30)
@@ -249,10 +260,10 @@ def draw_next_shape(shape, surface):
                 pygame.draw.rect(surface, shape.color,
                                  (sx + j * block_size, sy + i * block_size, block_size, block_size), 0)
 
-    surface.blit(label, (sx + 10, sy - block_size))
+    surface.blit(label, (sx + 10, sy - 30))
 
 
-def draw_window(surface, grid):
+def draw_window(surface, grid, score=0):
     # black surface
     surface.fill((0, 0, 0))
 
@@ -260,6 +271,14 @@ def draw_window(surface, grid):
     label = font.render('Tetris', 1, (255, 255, 255))
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
+
+    font = pygame.font.SysFont('Arial', 30)
+    label = font.render('Score: ' + str(score), 1, (255, 255, 255))
+
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + play_height / 2 - 100
+
+    surface.blit(label, (sx + 25, sy + 160))
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -287,15 +306,23 @@ def main(win):
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.27
+    level_time = 0
+    score = 0
 
     while run:
 
         grid = create_grid(locked_positions)
 
         fall_time += clock.get_rawtime()
+        level_time += clock.get_rawtime()
         clock.tick()
 
-        # PIECE FALLING CODE
+        if level_time / 1000 > 5:
+            level_time = 0
+            if fall_speed > 0.12:
+                fall_speed -= 0.005
+
+        # piece falling
         if fall_time / 1000 >= fall_speed:
             fall_time = 0
             current_piece.y += 1
@@ -340,7 +367,7 @@ def main(win):
             if y > -1:
                 grid[y][x] = current_piece.color
 
-        # IF PIECE HIT GROUND
+        # if piece hits the ground
         if change_piece:
             for pos in shape_pos:
                 p = (pos[0], pos[1])
@@ -348,20 +375,36 @@ def main(win):
             current_piece = next_piece
             next_piece = get_shape()
             change_piece = False
+            score += clear_row(grid, locked_positions) * 5
 
-        draw_window(win, grid)
+        draw_window(win, grid, score)
         draw_next_shape(next_piece, win)
         pygame.display.update()
 
-        # Check if user lost the game
+        # check if user lost the game
         if check_lost(locked_positions):
+            draw_text_middle(win, "YOU LOST!", 80, (255, 255, 255))
+            pygame.display.update()
+            pygame.time.delay(1200)
             run = False
 
     pygame.display.quit()
 
 
 def main_menu(win):
-    main(win)
+    run = True
+    while run:
+        win.fill((0, 0, 0))
+        draw_text_middle(win, 'Press any key to begin.', 60, (255, 255, 255))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if event.type == pygame.KEYDOWN:
+                main(win)
+
+    pygame.display.quit()
 
 
 win = pygame.display.set_mode((s_width, s_height))
