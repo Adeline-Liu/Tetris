@@ -145,7 +145,7 @@ class Piece(object):
         self.rotation = 0
 
 
-def create_grid(locked_pos = {}):
+def create_grid(locked_pos={}):
     grid = [[(0, 0, 0) for x in range(10)] for x in range(20)]
 
     for i in range(len(grid)):
@@ -389,6 +389,7 @@ def main(win):
             run = False
 
     pygame.display.quit()
+    quit()
 
 
 def main_menu(win):
@@ -405,6 +406,7 @@ def main_menu(win):
                 main(win)
 
     pygame.display.quit()
+    quit()
 
 
 win = pygame.display.set_mode((s_width, s_height))
